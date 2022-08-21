@@ -6,9 +6,22 @@
 p {
   margin: 0;
 }
-.red {
-  background-color: red;
+
+.cross
+ {
+   background-image: url("../img/cross.png");
 }
-.blue {
-  background-color: blue;
+.circle
+ {
+  background-image: url("../img/circle.png");
+}
+
+#container {
+  width: 163px;
+}
+#sizeDiv {
+  width: 162px;
+}
+.imgSize{
+  width: 30px;
 }

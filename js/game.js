@@ -1,26 +1,24 @@
 const cont = document.getElementById("container");
-const form = document.querySelector("form");
-const btnSize = document.getElementById("size");
-const circle = document.getElementById("circle");
-const cross = document.getElementById("cross");
+const newGame = document.getElementById("size");
 
-let row = document.getElementById("row");
-let column = document.getElementById("column");
-let radioButton = document.querySelectorAll('input[name="type"]');
 let div1 = document.createElement("div");
 div1.id = "sizeDiv";
-let select;
+let userSelect;
+let kompSelect;
+let sizeGame;
 
-btnSize.addEventListener("click", (e) => {
+newGame.addEventListener("click", (e) => {
   let btnDelet = document.querySelectorAll(".btnDelete");
+  let radioButton = document.querySelectorAll('input[name="type"]');
 
   for (let radio of radioButton) {
-    console.log(radio.chached);
-    if (radio.chached) {
-      select = radio.value;
-      console.log(select);
+    if (!radio.checked) {
+      kompSelect = radio.value;
+    } else {
+      userSelect = radio.value;
     }
   }
+
   if (btnDelet.length > 0) {
     for (const elem of btnDelet) {
       elem.remove();
@@ -33,6 +31,9 @@ btnSize.addEventListener("click", (e) => {
       but.id = `${i}-${j}`;
       but.classList.add("btnSize");
       but.classList.add("btnDelete");
+      if (i % 2 === 1 && j % 2 === 1) {
+        but.classList.add(`${kompSelect}`);
+      }
       div1.appendChild(but);
     }
 
@@ -42,7 +43,8 @@ btnSize.addEventListener("click", (e) => {
 });
 
 const handRed = (data) => {
-  let redUser = document.querySelectorAll(".red");
+  let redUser = document.querySelectorAll(`.${userSelect}`);
+
   for (let i = 0; i < redUser.length; i++) {
     if (data == redUser[i].id) {
       return false;
@@ -52,7 +54,8 @@ const handRed = (data) => {
 };
 
 const handBlue = (data) => {
-  let kompBlue = document.querySelectorAll(".blue");
+  const kompBlue = document.querySelectorAll(`.${kompSelect}`);
+
   for (let i = 0; i < kompBlue.length; i++) {
     if (data == kompBlue[i].id) {
       return false;
@@ -60,34 +63,67 @@ const handBlue = (data) => {
   }
   return true;
 };
+const selectFound = (i, user) => {
+  let count = 0;
+  for (const item of user) {
+    for (let j = 0; j < 3; j++) {
+      console.log(item.id === `${i}-${j}`);
+      if (item.id === `${i}-${j}`) {
+        count++;
+      }
+    }
+  }
+  if (count >= 2) {
+    for (const item of user) {
+      for (let j = 0; j < 3; j++) {
+        if (item.id !== `${i}-${j}`) {
+          if (handRed(`${i}-${j}`)) {
+            const btnAddClass = document.getElementById(`${i}-${j}`);
+            console.log(btnAddClass.id);
+            btnAddClass.classList.add(`${kompSelect}`);
+            return;
+          }
+        }
+      }
+    }
+  } else {
+    for (const select of sizeGame) {
+      if (handBlue(select.id) && handRed(select.id)) {
+        select.classList.add(`${kompSelect}`);
+        return;
+      }
+    }
+  }
+};
+const controlWhoWin = () => {
+  const kompBlue = document.querySelectorAll(`.${kompSelect}`);
+  let redUser = document.querySelectorAll(`.${userSelect}`);
+  for (const itemId of redUser) {
+    let row = itemId.id.charAt(0);
+    let col = itemId.id.charAt(2);
 
+    selectFound(row, redUser);
+    return;
+  }
+};
 div1?.addEventListener("click", (e) => {
   e.preventDefault();
 
   if (e.target.localName === "button") {
     let i = e.target.attributes.id.nodeValue;
     let chanDiv = document.getElementById(i);
-    chanDiv.classList.add("red");
+    chanDiv.classList.add(`${userSelect}`);
   }
-  //-------------------------------------------------------
-  let kompPas = document.querySelectorAll(".btnSize");
 
-  // let kompBlueSelect = document.querySelectorAll(".blue");
-  for (const select of kompPas) {
-    if (handBlue(select.id) && handRed(select.id)) {
-      console.log(select);
-      select.classList.add("blue");
-      break;
-    }
-  }
+  sizeGame = document.querySelectorAll(".btnSize");
+
+  controlWhoWin();
 });
 
 circle.addEventListener("change", () => {
-  console.log(circle.value);
   select = "circle";
 });
 
 cross.addEventListener("change", (e) => {
-  console.log(e);
   select = "cross";
 });
