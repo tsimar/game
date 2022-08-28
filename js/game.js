@@ -42,70 +42,152 @@ newGame.addEventListener("click", (e) => {
   }
 });
 
-const handRed = (data) => {
-  let redUser = document.querySelectorAll(`.${userSelect}`);
-
-  for (let i = 0; i < redUser.length; i++) {
-    if (data == redUser[i].id) {
+function forEachCircleOrCross(data, circleOrCross) {
+  for (let i = 0; i < circleOrCross.length; i++) {
+    if (data == circleOrCross[i].id) {
       return false;
     }
   }
   return true;
+}
+
+const handRed = (data) => {
+  let redUser = document.querySelectorAll(`.${userSelect}`);
+  return forEachCircleOrCross(data, redUser);
 };
 
 const handBlue = (data) => {
   const kompBlue = document.querySelectorAll(`.${kompSelect}`);
-
-  for (let i = 0; i < kompBlue.length; i++) {
-    if (data == kompBlue[i].id) {
-      return false;
-    }
-  }
-  return true;
+  return forEachCircleOrCross(data, kompBlue);
 };
-const selectFound = (i, user) => {
+
+function countInLine(i, user) {
   let count = 0;
   for (const item of user) {
     for (let j = 0; j < 3; j++) {
-      console.log(item.id === `${i}-${j}`);
       if (item.id === `${i}-${j}`) {
         count++;
       }
     }
   }
-  if (count >= 2) {
-    for (const item of user) {
-      for (let j = 0; j < 3; j++) {
-        if (item.id !== `${i}-${j}`) {
-          if (handRed(`${i}-${j}`)) {
-            const btnAddClass = document.getElementById(`${i}-${j}`);
-            console.log(btnAddClass.id);
-            btnAddClass.classList.add(`${kompSelect}`);
-            return;
-          }
+  return count;
+}
+function pushRowsSelectKomp(i, user) {
+  for (const item of user) {
+    for (let j = 0; j < 3; j++) {
+      if (item.id !== `${i}-${j}`) {
+        if (handRed(`${i}-${j}`)) {
+          const btnAddClass = document.getElementById(`${i}-${j}`);
+          btnAddClass.classList.add(`${kompSelect}`);
+          return;
         }
       }
     }
-  } else {
-    for (const select of sizeGame) {
-      if (handBlue(select.id) && handRed(select.id)) {
-        select.classList.add(`${kompSelect}`);
+  }
+}
+
+function pushColumsSelectKomp(j, user) {
+  for (const item of user) {
+    for (let i = 0; i < 3; i++) {
+      if (item.id !== `${i}-${j}`) {
+        if (handRed(`${i}-${j}`)) {
+          const btnAddClass = document.getElementById(`${i}-${j}`);
+          btnAddClass.classList.add(`${kompSelect}`);
+          return;
+        }
+      }
+    }
+  }
+}
+
+function iteratorSizeGame(j, i) {
+  sizeGame.forEach(function (item, index) {
+    if (item.id === `${j}-${i}`) {
+      sizeGame[index].classList.add(`${kompSelect}`);
+      return;
+    }
+  });
+}
+
+const selectFound = () => {
+  for (let j = 0; j < 3; j += 2) {
+    for (let i = 0; i < 3; i += 2) {
+      if (handRed(`${j}-${i}`) && handBlue(`${j}-${i}`)) {
+        iteratorSizeGame(j, i);
         return;
       }
     }
   }
-};
-const controlWhoWin = () => {
-  const kompBlue = document.querySelectorAll(`.${kompSelect}`);
-  let redUser = document.querySelectorAll(`.${userSelect}`);
-  for (const itemId of redUser) {
-    let row = itemId.id.charAt(0);
-    let col = itemId.id.charAt(2);
 
-    selectFound(row, redUser);
-    return;
+  for (const select of sizeGame) {
+    if (handBlue(select.id) && handRed(select.id)) {
+      select.classList.add(`${kompSelect}`);
+      return;
+    }
   }
 };
+const handleWenPutForKomp = () => {
+  let redUser = document.querySelectorAll(`.${userSelect}`);
+  const kompBlue = document.querySelectorAll(`.${kompSelect}`);
+  let counRow = 0;
+  let counCol = 0;
+  let cols = -1;
+  let rows = -1;
+  let countFreePoints = true;
+
+  for (const itemId of redUser) {
+    if (cols !== itemId.id.charAt(0)) {
+      cols = itemId.id.charAt(0);
+      for (let i = 0; i < redUser.length; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (redUser[i].id === `${cols}-${j}`) {
+            counCol++;
+          }
+        }
+      }
+    }
+
+    if (rows !== itemId.id.charAt(2)) {
+      rows = itemId.id.charAt(2);
+      for (let i = 0; i < redUser.length; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (redUser[i].id === `${j}-${rows}`) {
+            counRow++;
+          }
+        }
+      }
+    }
+
+    if (counCol >= 2) {
+      for (let i = 0; i < kompBlue.length; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (kompBlue[i].id === `${cols}-${j}`) {
+            countFreePoints = false;
+          }
+        }
+      }
+      break;
+    } else if (counRow >= 2) {
+      for (let i = 0; i < kompBlue.length; i++) {
+        for (let j = 0; j < 3; j++) {
+          if (kompBlue[i].id === `${j}-${rows}`) {
+            countFreePoints = false;
+          }
+        }
+      }
+      break;
+    }
+  }
+
+  if (counCol >= 2 && countFreePoints) {
+    pushRowsSelectKomp(cols, redUser);
+  } else if (counRow >= 2 && countFreePoints) {
+    pushColumsSelectKomp(rows, redUser);
+  } else {
+    selectFound();
+  }
+};
+
 div1?.addEventListener("click", (e) => {
   e.preventDefault();
 
@@ -117,7 +199,7 @@ div1?.addEventListener("click", (e) => {
 
   sizeGame = document.querySelectorAll(".btnSize");
 
-  controlWhoWin();
+  handleWenPutForKomp();
 });
 
 circle.addEventListener("change", () => {
